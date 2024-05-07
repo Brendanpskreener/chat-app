@@ -2,7 +2,8 @@ const path = require('path')
 const http = require('http')
 const express = require('express')
 const socketio = require('socket.io')
-const { generateMessage, generateLocationMessage } = require('./utils/messages')
+const { generateMessage } = require('./utils/messages')
+const { addUser, removeUser, getUser, getUsersInRoom } = require('./utils/users')
 
 const app = express()
 const server = http.createServer(app)
@@ -14,27 +15,38 @@ const publicDirectoryPath = path.join(__dirname, '../public')
 app.use(express.static(publicDirectoryPath))
 
 io.on('connection', (socket) => {
-  console.log('New connection')
 
-  socket.on('join', ({ username, room }) => {
-    socket.join(room)
+  socket.on('join', ({ username, room }, callback) => {
+    const { error, user } = addUser({ id: socket.id, username, room })
+    if (error) {
+      return callback(error)
+    }
+    socket.join(user.room)
 
-    socket.emit('message', generateMessage('Welcome!'))
-    socket.broadcast.to(room).emit('message', generateMessage(`${username} has joined!`))
+    socket.emit('message', generateMessage('Admin', 'Welcome!'))
+    socket.broadcast.to(user.room).emit('message', generateMessage('Admin', `${user.username} has joined!`))
+    io.to(user.room).emit('roomData', {
+      room: user.room,
+      users: getUsersInRoom(user.room)
+    })
+    callback()
   })
 
   socket.on('sendMessage', (message, callback) => {
-    io.emit('message', generateMessage(message))
-    callback('delivered')
-  })
-
-  socket.on('sendLocation', ({ latitude, longitude }, callback) => {
-    io.emit('locationMessage', generateLocationMessage(`http://google.com/maps?q=${latitude},${longitude}`))
+    const { room, username } = getUser(socket.id)
+    io.to(room).emit('message', generateMessage(username, message))
     callback()
   })
 
   socket.on('disconnect', () => {
-    io.emit('message', generateMessage('a user has left'))
+    const user = removeUser(socket.id)
+    if (user) {
+      io.to(user.room).emit('message', generateMessage('Admin', `${user.username} has left`))
+      io.to(user.room).emit('roomData', {
+        room: user.room,
+        users: getUsersInRoom(user.room)
+      })
+    }
   })
 })
 

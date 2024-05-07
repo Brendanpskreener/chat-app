@@ -4,32 +4,50 @@ const socket = io()
 const messageForm = document.querySelector('#message-form')
 const messageFormInput = messageForm.querySelector('input')
 const messageFormButton = messageForm.querySelector('button')
-const locationButton = document.querySelector('#send-location')
 const messages = document.querySelector('#messages')
 
 // set up templates
 const messageTemplate = document.querySelector('#message-template').innerHTML
-const locationTemplate = document.querySelector('#location-template').innerHTML
+const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
 
 //Options
 const { username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true })
 
-socket.on('message', ({ text, createdAt }) => {
-  console.log(text, createdAt)
+function autoscroll() {
+  //New message ekement
+  const newMessage = messages.lastElementChild
+  //Height of new message
+  const newMessageStyles = getComputedStyle(newMessage)
+  const newMessageMargin = parseInt(newMessageStyles.marginBottom)
+  const newMessageHeight = newMessage.offsetHeight + newMessageMargin
+  //Visible height
+  const visibleHeight = messages.offsetHeight
+  //Height of message container
+  const containerHeight = messages.scrollHeight
+  //How far have I scrolled?
+  const scrollOffset = messages.scrollTop + visibleHeight
+
+  if (containerHeight - newMessageHeight <= scrollOffset) {
+    messages.scrollTop = messages.scrollHeight
+  }
+}
+
+socket.on('message', ({ username, text, createdAt }) => {
   const html = Mustache.render(messageTemplate, {
+    username,
     text,
     createdAt: moment(createdAt).format('h:mm a')
   })
   messages.insertAdjacentHTML('beforeend', html)
+  autoscroll()
 })
 
-socket.on('locationMessage', ({ url, createdAt }) => {
-  console.log(url, createdAt)
-  const html = Mustache.render(locationTemplate, {
-    location: url,
-    createdAt: moment(createdAt).format('h:mm a')
+socket.on('roomData', ({ room, users }) => {
+  const html = Mustache.render(sidebarTemplate, {
+    room,
+    users
   })
-  messages.insertAdjacentHTML('beforeend', html)
+  document.querySelector('#sidebar').innerHTML = html
 })
 
 messageForm.addEventListener('submit', (event) => {
@@ -38,28 +56,16 @@ messageForm.addEventListener('submit', (event) => {
 
   const message = event.target.elements.message.value
 
-  socket.emit('sendMessage', message, (words) => {
+  socket.emit('sendMessage', message, () => {
     messageFormButton.removeAttribute('disabled')
     messageFormInput.value = ''
     messageFormInput.focus()
-
-    console.log('the message was delivered', words)
   })
 })
 
-locationButton.addEventListener('click', () => {
-  if (!navigator.geolocation) {
-    return alert('location unavailable')
+socket.emit('join', { username, room }, (error) => {
+  if (error) {
+    alert(error)
+    location.href = '/'
   }
-  locationButton.setAttribute('disabled', 'disabled')
-  navigator.geolocation.getCurrentPosition(({ coords: { latitude, longitude } }) => {
-    socket.emit('sendLocation', {
-      latitude,
-      longitude
-    }, () => {
-      locationButton.removeAttribute('disabled')
-    })
-  })
 })
-
-socket.emit('join', { username, room })
