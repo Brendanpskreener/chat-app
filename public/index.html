@@ -7,18 +7,19 @@
 </head>
 
 <body>
-  <div class="centered-form">
-    <div class="centered-form__box">
-      <h1>Join</h1>
-      <form action="/chat.html">
-        <label>Display Name</label>
-        <input type="text" name="username" placeholder="Display Name" required>
-        <label>Room</label>
-        <input type="text" name="room" placeholder="Room" required>
-        <button>Join</button>
-      </form>
+  <div class="chat">
+    <div id="sidebar" class="chat__sidebar">
+    </div>
+    <div class="chat__main">
+      <div id="messages" class="chat__messages"></div>
+      <div class="compose">
+        <form id="message-form">
+          <input name="message" placeholder="Message" required autocomplete="off">
+          <button>Send</button>
+        </form>
+      </div>
     </div>
   </div>
-</body>
+  <script src="/js/chat.js"></script>
 
 </html>
