@@ -35,9 +35,7 @@ const autoscroll = () => {
 
 websocket.addEventListener("open", (event) => {
   const message = {
-    action: "sendPublic",
-    username: "Server Admin",
-    text: "A new user has joined"
+    action: "joinMessage",
   }
   websocket.send(JSON.stringify(message))
   console.log("socket opened", event)
@@ -60,7 +58,6 @@ $messageForm.addEventListener('submit', (e) => {
   const text = e.target.elements.message.value
   const message = {
     action: "sendPublic",
-    username: "Connection 1",
     text
   }
   websocket.send(JSON.stringify(message))
