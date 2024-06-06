@@ -44,12 +44,16 @@ websocket.addEventListener("open", (event) => {
 websocket.addEventListener("message", ({ data }) => {
   const message = JSON.parse(data)
   console.log("message received:", message)
-  const html = Mustache.render(messageTemplate, {
+  const chatHTML = Mustache.render(messageTemplate, {
     username: message.username,
     message: message.text,
     createdAt: moment(message.createdAt).format('h:mm a')
   })
-  $messages.insertAdjacentHTML('beforeend', html)
+  const sidebarHTML = Mustache.render(sidebarTemplate, {
+    users: message.users
+  })
+  document.querySelector('#sidebar').innerHTML = sidebarHTML
+  $messages.insertAdjacentHTML('beforeend', chatHTML)
   autoscroll()
 })
 
