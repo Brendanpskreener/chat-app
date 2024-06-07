@@ -33,12 +33,11 @@ const autoscroll = () => {
   }
 }
 
-websocket.addEventListener("open", (event) => {
+websocket.addEventListener("open", () => {
   const message = {
     action: "joinMessage",
   }
   websocket.send(JSON.stringify(message))
-  console.log("socket opened", event)
 })
 
 websocket.addEventListener("message", ({ data }) => {
