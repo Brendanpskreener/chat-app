@@ -40,6 +40,10 @@ websocket.addEventListener("open", () => {
   websocket.send(JSON.stringify(message))
 })
 
+websocket.addEventListener("close", () => {
+  console.log('websocket has closed')
+})
+
 websocket.addEventListener("message", ({ data }) => {
   const message = JSON.parse(data)
   console.log("message received:", message)
