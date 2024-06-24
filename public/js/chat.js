@@ -1,4 +1,4 @@
-const url = 'wss://8h46yhxazc.execute-api.us-west-2.amazonaws.com/dev/'
+const url = 'wss://66m08ch0se.execute-api.us-west-2.amazonaws.com/dev/'
 const websocket = new WebSocket(url)
 
 // Elements
