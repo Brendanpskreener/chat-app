@@ -1,4 +1,7 @@
-const url = 'wss://66m08ch0se.execute-api.us-west-2.amazonaws.com/dev/'
+const urlParams = new URLSearchParams(window.location.hash.substring(1));
+const idToken = urlParams.get('id_token');
+
+const url = `wss://66m08ch0se.execute-api.us-west-2.amazonaws.com/dev/?Auth=${idToken}`
 const websocket = new WebSocket(url)
 
 // Elements
